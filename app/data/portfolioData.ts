@@ -73,3 +73,35 @@ export const skillsData: Skill[] = [
   { name: "HTML5 & Tailwind CSS", category: "Frontend", level: "90%" },
   { name: "Cybersecurity Fundamentals", category: "Tools", level: "70%" },
 ];
+// ... الكود الموجود مسبقاً (projectsData, skillsData)
+
+export const testimonialsData = [
+  {
+    id: 1,
+    name: "أحمد محمد",
+    role: "مدير التسويق, شركة تك",
+    content: "عمل مميز واحترافي، تعاون مع Ely Salem كان تجربة رائعة. أنتج موقعاً متكاملاً يفوق توقعاتنا.",
+    rating: 5,
+  },
+  {
+    id: 2,
+    name: "سارة العلي",
+    role: "مؤسسة منصة تعليمية",
+    content: "أبدع في تصميم واجهة منصتنا التعليمية، مع تجربة مستخدم سلسة وأداء عالي. أنصح به بشدة.",
+    rating: 5,
+  },
+  {
+    id: 3,
+    name: "خالد بن سعيد",
+    role: "رئيس قسم التقنية, شركة حلول",
+    content: "حلول تقنية متكاملة، سرعة في التنفيذ ودقة في العمل. استطاع تحويل فكرتنا إلى منتج رقمي مذهل.",
+    rating: 4,
+  },
+  {
+    id: 4,
+    name: "نورة الفهد",
+    role: "مصممة UX/UI مستقلة",
+    content: "تعاون مثمر، فهم عميق لمتطلبات التصميم والتطوير. سعدت بالنتيجة النهائية.",
+    rating: 5,
+  },
+];

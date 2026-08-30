@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion"; // ⬅️ تأكد من الاستيراد
 import ThemeToggle from "./ThemeToggle";
 import logoImg from "../img/Ely-salem.png";
 
@@ -13,7 +13,6 @@ export default function Header() {
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
 
-  // شريط تقدم التمرير
   useEffect(() => {
     const updateProgress = () => {
       const scrollTop = window.scrollY;
@@ -109,10 +108,11 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Mobile Menu Dropdown with animation */}
+        {/* ===== Mobile Menu Dropdown with animation ===== */}
         <AnimatePresence>
           {isMenuOpen && (
             <motion.div
+              key="mobile-menu" // ⬅️ مهم لـ AnimatePresence
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
@@ -128,13 +128,25 @@ export default function Header() {
               >
                 عني
               </button>
-              <a href="#skills" onClick={() => setIsMenuOpen(false)} className="block py-2 text-slate-700 dark:text-slate-200 font-medium hover:text-sky-500">
+              <a
+                href="#skills"
+                onClick={() => setIsMenuOpen(false)}
+                className="block py-2 text-slate-700 dark:text-slate-200 font-medium hover:text-sky-500"
+              >
                 المهارات
               </a>
-              <a href="#projects" onClick={() => setIsMenuOpen(false)} className="block py-2 text-slate-700 dark:text-slate-200 font-medium hover:text-sky-500">
+              <a
+                href="#projects"
+                onClick={() => setIsMenuOpen(false)}
+                className="block py-2 text-slate-700 dark:text-slate-200 font-medium hover:text-sky-500"
+              >
                 المشاريع
               </a>
-              <Link href="/blog" onClick={() => setIsMenuOpen(false)} className="block py-2 text-slate-700 dark:text-slate-200 font-medium hover:text-sky-500">
+              <Link
+                href="/blog"
+                onClick={() => setIsMenuOpen(false)}
+                className="block py-2 text-slate-700 dark:text-slate-200 font-medium hover:text-sky-500"
+              >
                 المدونة
               </Link>
               <motion.button
@@ -152,15 +164,27 @@ export default function Header() {
         </AnimatePresence>
       </header>
 
-      {/* Contact Modal */}
+      {/* ===== Contact Modal ===== */}
       <AnimatePresence>
         {isContactOpen && (
-          <Modal onClose={() => setIsContactOpen(false)} title="معلومات التواصل">
-            <p className="text-slate-500 dark:text-slate-400 text-sm">يسعدني جداً تواصلك لبناء مشاريع مميزة أو مناقشة أفكار جديدة!</p>
+          <Modal onClose={() => setIsContactOpen(false)} title="معلومات التواصل" key="contact-modal">
+            <p className="text-slate-500 dark:text-slate-400 text-sm">
+              يسعدني جداً تواصلك لبناء مشاريع مميزة أو مناقشة أفكار جديدة!
+            </p>
             <div className="space-y-3 mt-4">
-              <ContactItem icon="📧" label="البريد الإلكتروني" value="missawi02@gmail.com" href="mailto:missawi02@gmail.com" />
+              <ContactItem
+                icon="📧"
+                label="البريد الإلكتروني"
+                value="missawi02@gmail.com"
+                href="mailto:missawi02@gmail.com"
+              />
               <ContactItem icon="📍" label="الموقع" value="Vitoria-Gasteiz, España" />
-              <ContactItem icon="💻" label="GitHub" value="github.com/elysalem" href="https://github.com" />
+              <ContactItem
+                icon="💻"
+                label="GitHub"
+                value="github.com/elysalem"
+                href="https://github.com"
+              />
             </div>
             <button
               onClick={() => setIsContactOpen(false)}
@@ -172,10 +196,10 @@ export default function Header() {
         )}
       </AnimatePresence>
 
-      {/* About Modal */}
+      {/* ===== About Modal ===== */}
       <AnimatePresence>
         {isAboutOpen && (
-          <Modal onClose={() => setIsAboutOpen(false)} title="نبذة عني">
+          <Modal onClose={() => setIsAboutOpen(false)} title="نبذة عني" key="about-modal">
             <p className="text-slate-600 dark:text-slate-300 text-base leading-relaxed">
               مطور ويب وشغوف بتطوير الواجهات الرقمية الحديثة والتطبيقات التفاعلية. أمتلك خبرة عمل واسعة في بناء وتصميم المواقع
               والمنصات باستخدام أحدث تقنيات الويب مثل React وNext.js وTypeScript، إلى جانب تخصيص وتطوير أنظمة إدارة المحتوى مثل
@@ -194,8 +218,17 @@ export default function Header() {
   );
 }
 
-// مكونات مساعدة
-const Modal = ({ children, title, onClose }) => (
+// ===== المكونات المساعدة =====
+
+const Modal = ({
+  children,
+  title,
+  onClose,
+}: {
+  children: React.ReactNode;
+  title: string;
+  onClose: () => void;
+}) => (
   <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm" dir="rtl">
     <motion.div
       initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -204,7 +237,10 @@ const Modal = ({ children, title, onClose }) => (
       transition={{ duration: 0.3 }}
       className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 max-w-md w-full border border-sky-100 dark:border-slate-800 shadow-2xl relative text-right space-y-4"
     >
-      <button onClick={onClose} className="absolute top-4 left-4 p-2 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+      <button
+        onClick={onClose}
+        className="absolute top-4 left-4 p-2 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+      >
         ✕
       </button>
       <div className="flex items-center gap-3">
@@ -216,7 +252,17 @@ const Modal = ({ children, title, onClose }) => (
   </div>
 );
 
-const ContactItem = ({ icon, label, value, href }) => {
+const ContactItem = ({
+  icon,
+  label,
+  value,
+  href,
+}: {
+  icon: string;
+  label: string;
+  value: string;
+  href?: string;
+}) => {
   const content = (
     <div className="flex items-center gap-4 p-3.5 rounded-2xl bg-sky-50/50 dark:bg-slate-800/50 border border-sky-100 dark:border-slate-700 hover:border-sky-400 dark:hover:border-sky-400 transition group">
       <div className="w-10 h-10 rounded-xl bg-sky-400/10 text-sky-500 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
@@ -230,5 +276,11 @@ const ContactItem = ({ icon, label, value, href }) => {
       </div>
     </div>
   );
-  return href ? <a href={href} target="_blank" rel="noopener noreferrer">{content}</a> : content;
+  return href ? (
+    <a href={href} target="_blank" rel="noopener noreferrer">
+      {content}
+    </a>
+  ) : (
+    content
+  );
 };
