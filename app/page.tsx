@@ -127,7 +127,7 @@ const SkillCircle = ({
             strokeDashoffset={
               2 * Math.PI * 42 * (1 - (isVisible ? percentage : 0) / 100)
             }
-            transition={{ duration: 1.5, ease: "easeOut" }}
+            style={{ transition: "stroke-dashoffset 1.5s ease-out" }}
           />
           <defs>
             <linearGradient
@@ -274,7 +274,7 @@ export default function Home() {
           >
             <div className="relative rounded-3xl overflow-hidden shadow-2xl border-2 border-sky-400/30 group">
               <Image
-                src="/img/Ely-salem.png"
+                src="/img/Ely-salem-2.png"
                 alt="Ely Salem El Missawi"
                 width={400}
                 height={500}
@@ -332,7 +332,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ====== آراء العملاء (جديد) ====== */}
+      {/* ====== آراء العملاء ====== */}
       <Testimonials />
 
       {/* ====== التواصل ====== */}
