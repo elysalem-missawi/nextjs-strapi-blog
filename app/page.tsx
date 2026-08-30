@@ -274,7 +274,7 @@ export default function Home() {
           >
             <div className="relative rounded-3xl overflow-hidden shadow-2xl border-2 border-sky-400/30 group">
               <Image
-                src="/img/Ely.png"
+                src="/img/Ely-salem.png"
                 alt="Ely Salem El Missawi"
                 width={400}
                 height={500}
