@@ -1,4 +1,4 @@
-export const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337';
+export const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'https://strapi-backend-1pie.onrender.com';
 
 export async function fetchStrapi(path: string) {
   const response = await fetch(`${STRAPI_URL}/api${path}`, {
