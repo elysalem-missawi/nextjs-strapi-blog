@@ -69,11 +69,11 @@ export default function Footer() {
             <ul className="space-y-2 text-sm">
               <li>
                 <a
-                  href="mailto:contact@elysalem.dev"
+                  href="mailto:missawi02@gmail.com"
                   className="text-slate-600 dark:text-slate-400 hover:text-sky-500 transition-colors flex items-center gap-2"
                   dir="ltr"
                 >
-                  <span>📧</span> contact@elysalem.dev
+                  <span>📧</span> missawi02@gmail.com
                 </a>
               </li>
               <li className="text-slate-600 dark:text-slate-400 flex items-center gap-2">

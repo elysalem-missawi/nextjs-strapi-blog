@@ -1,70 +1,154 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import { motion, useInView, useAnimation } from "framer-motion";
+import { motion, useInView } from "framer-motion";
+
 import ProjectCard from "./components/ProjectCard";
-import { projectsData, skillsData } from "./data/portfolioData";
 import Testimonials from "./components/Testimonials";
 import Footer from "./components/Footer";
+import { projectsData, skillsData } from "./data/portfolioData";
 
-// ====== عداد متحرك ======
-const useCounter = (target: number, duration: number = 2000) => {
+/* =========================================================
+   Counter
+========================================================= */
+
+const useCounter = (target: number, duration = 1600, enabled = true) => {
   const [count, setCount] = useState(0);
+
   useEffect(() => {
+    if (!enabled) {
+      setCount(0);
+      return;
+    }
+
     let start = 0;
-    const increment = target / (duration / 16);
-    const timer = setInterval(() => {
-      start += increment;
-      if (start >= target) {
-        setCount(target);
-        clearInterval(timer);
+    const startTime = performance.now();
+
+    const animate = (currentTime: number) => {
+      const progress = Math.min((currentTime - startTime) / duration, 1);
+
+      const easedProgress = 1 - Math.pow(1 - progress, 3);
+
+      const current = Math.floor(easedProgress * target);
+
+      setCount(current);
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
       } else {
-        setCount(Math.floor(start));
+        setCount(target);
       }
-    }, 16);
-    return () => clearInterval(timer);
-  }, [target, duration]);
+    };
+
+    const frame = requestAnimationFrame(animate);
+
+    return () => cancelAnimationFrame(frame);
+  }, [target, duration, enabled]);
+
   return count;
 };
 
-// ====== مكون الإحصائيات ======
+/* =========================================================
+   Section Heading
+========================================================= */
+
+const SectionHeading = ({
+  eyebrow,
+  title,
+  description,
+}: {
+  eyebrow: string;
+  title: string;
+  description?: string;
+}) => {
+  return (
+    <div className="max-w-3xl mb-10">
+      <span className="inline-flex items-center gap-2 text-sm font-bold text-sky-600 dark:text-sky-400 mb-3">
+        <span className="w-8 h-px bg-sky-500" />
+        {eyebrow}
+      </span>
+
+      <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-slate-950 dark:text-white">
+        {title}
+      </h2>
+
+      {description && (
+        <p className="mt-4 text-base md:text-lg leading-8 text-slate-600 dark:text-slate-400">
+          {description}
+        </p>
+      )}
+    </div>
+  );
+};
+
+/* =========================================================
+   Stats
+========================================================= */
+
 const Stats = () => {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
-  const projectsCount = useCounter(isInView ? 24 : 0);
-  const experienceYears = useCounter(isInView ? 7 : 0);
-  const clientsCount = useCounter(isInView ? 38 : 0);
-  const satisfaction = useCounter(isInView ? 98 : 0);
+
+  const isInView = useInView(ref, {
+    once: true,
+    margin: "-100px",
+  });
+
+  const projects = useCounter(24, 1400, isInView);
+  const experience = useCounter(7, 1200, isInView);
+  const clients = useCounter(38, 1400, isInView);
+  const satisfaction = useCounter(98, 1600, isInView);
 
   const stats = [
-    { label: "مشاريع منجزة", value: projectsCount, suffix: "+" },
-    { label: "سنوات الخبرة", value: experienceYears, suffix: "" },
-    { label: "عميل سعيد", value: clientsCount, suffix: "+" },
-    { label: "رضا العملاء", value: satisfaction, suffix: "%" },
+    {
+      value: projects,
+      suffix: "+",
+      label: "مشروعًا منجزًا",
+    },
+    {
+      value: experience,
+      suffix: "",
+      label: "سنوات من الخبرة",
+    },
+    {
+      value: clients,
+      suffix: "+",
+      label: "عميلًا",
+    },
+    {
+      value: satisfaction,
+      suffix: "%",
+      label: "رضا العملاء",
+    },
   ];
 
   return (
-    <section
-      ref={ref}
-      className="py-16 bg-gradient-to-b from-sky-50/30 to-transparent dark:from-slate-900/20"
-    >
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto text-center">
-        {stats.map((stat, idx) => (
+    <section ref={ref} aria-label="إحصائيات مهنية" className="py-10">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-px overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800 bg-slate-200 dark:bg-slate-800">
+        {stats.map((stat, index) => (
           <motion.div
-            key={idx}
-            initial={{ opacity: 0, y: 30 }}
+            key={stat.label}
+            initial={{ opacity: 0, y: 15 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.5, delay: idx * 0.1 }}
-            className="p-6 rounded-3xl bg-white/70 dark:bg-slate-900/70 backdrop-blur-sm border border-sky-100 dark:border-slate-800 shadow-lg"
+            transition={{
+              duration: 0.5,
+              delay: index * 0.08,
+            }}
+            className="
+              bg-white
+              dark:bg-slate-950
+              px-5 py-7
+              text-center
+            "
           >
-            <div className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-500 to-indigo-600">
+            <div className="text-3xl sm:text-4xl font-black text-slate-950 dark:text-white">
               {stat.value}
-              {stat.suffix}
+              <span className="text-sky-500">{stat.suffix}</span>
             </div>
-            <div className="text-sm font-medium text-slate-600 dark:text-slate-400 mt-1">
+
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
               {stat.label}
-            </div>
+            </p>
           </motion.div>
         ))}
       </div>
@@ -72,259 +156,762 @@ const Stats = () => {
   );
 };
 
-// ====== مكون المهارات الدائرية ======
-const SkillCircle = ({
-  name,
-  category,
-}: {
-  name: string;
-  category: string;
-}) => {
-  const percentage =
-    category === "لغات برمجة"
-      ? 90
-      : category === "أطر عمل"
-        ? 85
-        : category === "أدوات"
-          ? 75
-          : 80;
+/* =========================================================
+   Skill Card
+========================================================= */
 
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-50px" });
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    if (inView) setIsVisible(true);
-  }, [inView]);
-
+const SkillCard = ({ name, category }: { name: string; category: string }) => {
   return (
     <motion.div
-      ref={ref}
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={inView ? { opacity: 1, scale: 1 } : {}}
-      transition={{ duration: 0.5 }}
-      className="flex flex-col items-center p-4 rounded-2xl bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm border border-sky-100 dark:border-slate-800 hover:shadow-xl transition-shadow"
+      whileHover={{
+        y: -4,
+      }}
+      transition={{
+        type: "spring",
+        stiffness: 300,
+        damping: 20,
+      }}
+      className="
+        group
+        rounded-2xl
+        border border-slate-200
+        dark:border-slate-800
+        bg-white
+        dark:bg-slate-950
+        p-5
+        transition-colors
+        hover:border-sky-300
+        dark:hover:border-sky-700
+      "
     >
-      <div className="relative w-24 h-24">
-        <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-          <circle
-            cx="50"
-            cy="50"
-            r="42"
-            fill="none"
-            stroke="#e2e8f0"
-            strokeWidth="8"
-          />
-          <circle
-            cx="50"
-            cy="50"
-            r="42"
-            fill="none"
-            stroke="url(#skillGradient)"
-            strokeWidth="8"
-            strokeLinecap="round"
-            strokeDasharray={2 * Math.PI * 42}
-            strokeDashoffset={
-              2 * Math.PI * 42 * (1 - (isVisible ? percentage : 0) / 100)
-            }
-            style={{ transition: "stroke-dashoffset 1.5s ease-out" }}
-          />
-          <defs>
-            <linearGradient
-              id="skillGradient"
-              x1="0%"
-              y1="0%"
-              x2="100%"
-              y2="100%"
-            >
-              <stop offset="0%" stopColor="#38bdf8" />
-              <stop offset="100%" stopColor="#6366f1" />
-            </linearGradient>
-          </defs>
-        </svg>
-        <div className="absolute inset-0 flex items-center justify-center text-lg font-bold text-slate-800 dark:text-white">
-          {isVisible ? percentage : 0}%
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h3 className="font-bold text-slate-900 dark:text-white">{name}</h3>
+
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            {category}
+          </p>
         </div>
+
+        <span
+          className="
+            flex h-9 w-9 shrink-0
+            items-center justify-center
+            rounded-xl
+            bg-sky-50
+            dark:bg-sky-950/40
+            text-sky-500
+            transition-transform
+            group-hover:scale-110
+          "
+          aria-hidden="true"
+        >
+          ✓
+        </span>
       </div>
-      <span className="mt-2 font-bold text-slate-800 dark:text-slate-100 text-sm text-center">
-        {name}
-      </span>
-      <span className="text-xs text-sky-500 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/50 px-3 py-0.5 rounded-full mt-1">
-        {category}
-      </span>
     </motion.div>
   );
 };
 
-// ====== زر العودة للأعلى ======
+/* =========================================================
+   Back To Top
+========================================================= */
+
 const ScrollToTop = () => {
   const [visible, setVisible] = useState(false);
+
   useEffect(() => {
-    const toggle = () => setVisible(window.scrollY > 500);
-    window.addEventListener("scroll", toggle);
-    return () => window.removeEventListener("scroll", toggle);
+    const handleScroll = () => {
+      setVisible(window.scrollY > 600);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    handleScroll();
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
+
+  if (!visible) return null;
+
   return (
     <motion.button
-      initial={{ opacity: 0, scale: 0.5 }}
-      animate={{ opacity: visible ? 1 : 0, scale: visible ? 1 : 0.5 }}
-      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-      className="fixed bottom-8 left-8 z-50 p-3 rounded-full bg-gradient-to-r from-sky-400 to-blue-600 text-white shadow-lg shadow-sky-400/30 hover:shadow-xl transition-all"
-      aria-label="العودة للأعلى"
+      initial={{
+        opacity: 0,
+        scale: 0.8,
+      }}
+      animate={{
+        opacity: 1,
+        scale: 1,
+      }}
+      whileHover={{
+        y: -3,
+      }}
+      whileTap={{
+        scale: 0.95,
+      }}
+      type="button"
+      onClick={() =>
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        })
+      }
+      aria-label="العودة إلى أعلى الصفحة"
+      className="
+        fixed
+        bottom-6
+        left-6
+        z-40
+        flex
+        h-11
+        w-11
+        items-center
+        justify-center
+        rounded-full
+        bg-slate-950
+        dark:bg-white
+        text-white
+        dark:text-slate-950
+        shadow-xl
+        transition
+      "
     >
       ↑
     </motion.button>
   );
 };
 
-// ====== الصفحة الرئيسية ======
-export default function Home() {
-  const controls = useAnimation();
-  const heroRef = useRef<HTMLDivElement>(null);
-  const heroInView = useInView(heroRef, { once: true });
+/* =========================================================
+   Main Page
+========================================================= */
 
-  useEffect(() => {
-    if (heroInView) controls.start("visible");
-  }, [heroInView, controls]);
+export default function Home() {
+  const heroRef = useRef<HTMLElement>(null);
+
+  const heroInView = useInView(heroRef, {
+    once: true,
+  });
+
+  /* Group skills by category */
+  const groupedSkills = useMemo(() => {
+    const groups: Record<string, typeof skillsData> = {};
+
+    skillsData.forEach((skill) => {
+      if (!groups[skill.category]) {
+        groups[skill.category] = [];
+      }
+
+      groups[skill.category].push(skill);
+    });
+
+    return groups;
+  }, []);
 
   return (
     <main
-      className="min-h-screen p-6 md:p-12 max-w-6xl mx-auto space-y-20"
       dir="rtl"
+      className="
+        min-h-screen
+        bg-white
+        dark:bg-slate-950
+        text-slate-900
+        dark:text-slate-100
+      "
     >
-      {/* خلفية متحركة */}
-      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-sky-300/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-indigo-300/20 rounded-full blur-3xl animate-pulse delay-1000" />
+      {/* =====================================================
+          Background
+      ===================================================== */}
+
+      <div
+        aria-hidden="true"
+        className="
+          fixed
+          inset-0
+          -z-10
+          overflow-hidden
+          pointer-events-none
+        "
+      >
+        <div
+          className="
+            absolute
+            -top-48
+            -right-48
+            h-[500px]
+            w-[500px]
+            rounded-full
+            bg-sky-400/10
+            blur-3xl
+          "
+        />
+
+        <div
+          className="
+            absolute
+            top-[40%]
+            -left-64
+            h-[450px]
+            w-[450px]
+            rounded-full
+            bg-indigo-400/10
+            blur-3xl
+          "
+        />
       </div>
 
-      {/* ====== هيرو ====== */}
+      {/* =====================================================
+          HERO
+      ===================================================== */}
       <section
         ref={heroRef}
         id="about"
-        className="py-12 relative rounded-3xl bg-gradient-to-br from-sky-50/30 via-white/50 to-indigo-50/30 dark:from-slate-900/40 dark:via-slate-900/20 dark:to-indigo-950/30 backdrop-blur-sm border border-white/20 dark:border-slate-800/50 shadow-2xl p-6 md:p-10"
+        className="
+    max-w-7xl
+    mx-auto
+    px-4
+    sm:px-6
+    lg:px-8
+    pt-10
+    md:pt-16
+  "
       >
-        <motion.div
-          initial="hidden"
-          animate={controls}
-          variants={{
-            hidden: { opacity: 0, y: 30 },
-            visible: {
-              opacity: 1,
-              y: 0,
-              transition: { staggerChildren: 0.2 },
-            },
-          }}
-          className="flex flex-col md:flex-row items-center justify-between gap-10 text-center md:text-right"
+        <div
+          className="
+      relative
+      overflow-hidden
+      rounded-[2rem]
+      border
+      border-slate-200
+      dark:border-slate-800
+      bg-slate-50/80
+      dark:bg-slate-900/50
+    "
         >
-          {/* النصوص */}
-          <motion.div
-            variants={{
-              hidden: { opacity: 0, x: -30 },
-              visible: { opacity: 1, x: 0 },
-            }}
-            className="space-y-4 max-w-xl"
+          {/* Decorative element */}
+          <div
+            aria-hidden="true"
+            className="
+        absolute
+        top-0
+        left-0
+        h-40
+        w-40
+        rounded-full
+        bg-sky-400/10
+        blur-3xl
+      "
+          />
+
+          <div
+            className="
+        relative
+        grid
+        lg:grid-cols-[1.1fr_.9fr]
+        items-center
+        gap-10
+        p-6
+        sm:p-10
+        lg:p-14
+      "
           >
-            <div className="inline-block px-4 py-1.5 rounded-full bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-300 text-sm font-semibold mb-2">
-              ✨ مرحباً بك في معرضي الرقمي
-            </div>
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600">
-              Ely Salem El Missawi
-            </h1>
-            <h2 className="text-2xl sm:text-3xl text-slate-700 dark:text-slate-300 font-bold">
-              مطور ويب ومصمم منصات تفاعلية
-            </h2>
-            <p className="text-slate-600 dark:text-slate-400 text-base md:text-lg leading-relaxed">
-              متخصص في بناء الواجهات الحديثة والتطبيقات التفاعلية باستخدام{" "}
-              <span dir="ltr" className="inline-block font-bold text-sky-500">
-                TypeScript
-              </span>
-              ،{" "}
-              <span dir="ltr" className="inline-block font-bold text-blue-500">
-                Next.js
-              </span>
-              ، و{" "}
-              <span
-                dir="ltr"
-                className="inline-block font-bold text-indigo-500"
+            {/* Hero text */}
+            <motion.div
+              initial={{
+                opacity: 0,
+                x: 30,
+              }}
+              animate={
+                heroInView
+                  ? {
+                      opacity: 1,
+                      x: 0,
+                    }
+                  : {}
+              }
+              transition={{
+                duration: 0.7,
+              }}
+              className="order-2 lg:order-1"
+            >
+              <div
+                className="
+            inline-flex
+            items-center
+            gap-2
+            rounded-full
+            border
+            border-emerald-200
+            dark:border-emerald-900
+            bg-emerald-50
+            dark:bg-emerald-950/30
+            px-3
+            py-1.5
+            text-sm
+            font-bold
+            text-emerald-700
+            dark:text-emerald-400
+          "
               >
-                WordPress
-              </span>
-              .
-            </p>
-            <motion.div whileHover={{ scale: 1.05 }} className="inline-block">
-              <a
-                href="#contact"
-                className="px-8 py-3 rounded-full bg-gradient-to-r from-sky-400 to-blue-600 text-white font-bold shadow-lg shadow-sky-400/30 hover:shadow-xl transition-all inline-block"
+                <span
+                  className="
+              h-2
+              w-2
+              rounded-full
+              bg-emerald-500
+              animate-pulse
+            "
+                />
+                متاح لفرص العمل ومشاريع Freelance
+              </div>
+
+              <p className="mt-7 text-sm font-bold uppercase tracking-[0.25em] text-sky-500">
+                Web Developer
+              </p>
+
+              <h1
+                className="
+            mt-3
+            text-4xl
+            sm:text-5xl
+            lg:text-6xl
+            xl:text-7xl
+            font-black
+            leading-[1.05]
+            tracking-tight
+            text-slate-950
+            dark:text-white
+          "
               >
-                تواصل معي الآن
-              </a>
+                Ely Salem
+                <br />
+                <span className="text-sky-500">El Missawi</span>
+              </h1>
+
+              <h2
+                className="
+            mt-6
+            max-w-2xl
+            text-xl
+            sm:text-2xl
+            font-bold
+            leading-relaxed
+            text-slate-700
+            dark:text-slate-300
+          "
+              >
+                أبني مواقع ومنصات ويب حديثة تجمع بين الأداء، التصميم وتجربة
+                المستخدم.
+              </h2>
+
+              <p
+                className="
+            mt-5
+            max-w-2xl
+            text-base
+            leading-8
+            text-slate-600
+            dark:text-slate-400
+          "
+              >
+                متخصص في تطوير الواجهات والمواقع باستخدام تقنيات الويب الحديثة،
+                مع خبرة في WordPress وWooCommerce وتطوير حلول رقمية عملية
+                للشركات والأفراد.
+              </p>
+
+              {/* Tech badges */}
+              <div className="mt-6 flex flex-wrap gap-2">
+                {[
+                  "React",
+                  "Next.js",
+                  "TypeScript",
+                  "WordPress",
+                  "WooCommerce",
+                ].map((tech) => (
+                  <span
+                    key={tech}
+                    dir="ltr"
+                    className="
+                rounded-lg
+                border
+                border-slate-200
+                dark:border-slate-700
+                bg-white
+                dark:bg-slate-900
+                px-3
+                py-1.5
+                text-xs
+                font-bold
+                text-slate-600
+                dark:text-slate-300
+              "
+                  >
+                    {tech}
+                  </span>
+                ))}
+              </div>
+
+              {/* CTAs */}
+              <div className="mt-8 flex flex-col sm:flex-row gap-3">
+                <a
+                  href="#projects"
+                  className="
+              inline-flex
+              items-center
+              justify-center
+              gap-2
+              rounded-xl
+              bg-slate-950
+              dark:bg-white
+              px-6
+              py-3.5
+              font-bold
+              text-white
+              dark:text-slate-950
+              transition
+              hover:-translate-y-0.5
+              shadow-lg
+            "
+                >
+                  مشاهدة مشاريعي
+                  <span aria-hidden="true">←</span>
+                </a>
+
+                <a
+                  href="#contact"
+                  className="
+              inline-flex
+              items-center
+              justify-center
+              gap-2
+              rounded-xl
+              border
+              border-sky-300
+              dark:border-sky-700
+              bg-white
+              dark:bg-slate-900
+              px-6
+              py-3.5
+              font-bold
+              text-sky-600
+              dark:text-sky-400
+              transition
+              hover:-translate-y-0.5
+              hover:bg-sky-50
+              dark:hover:bg-sky-950/30
+            "
+                >
+                  ابدأ مشروعًا
+                </a>
+              </div>
+
+              {/* ====== REPLACED CV LINK WITH EXPLORE PROJECTS ====== */}
+              <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2">
+                <a
+                  href="#projects"
+                  className="
+              text-sm
+              font-bold
+              text-slate-600
+              dark:text-slate-300
+              underline
+              underline-offset-4
+              hover:text-sky-500
+            "
+                >
+                  استكشف مشاريعي ←
+                </a>
+
+                <span className="text-slate-300 dark:text-slate-700">|</span>
+
+                <span className="text-sm text-slate-500 dark:text-slate-400">
+                  Vitoria-Gasteiz, España
+                </span>
+              </div>
             </motion.div>
-          </motion.div>
 
-          {/* الصورة الشخصية */}
+            {/* Hero image - Enhanced UI */}
+            <motion.div
+              initial={{
+                opacity: 0,
+                scale: 0.9,
+              }}
+              animate={
+                heroInView
+                  ? {
+                      opacity: 1,
+                      scale: 1,
+                    }
+                  : {}
+              }
+              transition={{
+                duration: 0.8,
+                delay: 0.15,
+              }}
+              className="
+          order-1
+          lg:order-2
+          flex
+          justify-center
+          relative
+        "
+            >
+              <div className="relative group">
+                {/* خلفية توهج مضيئة ناعمة */}
+                <div
+                  aria-hidden="true"
+                  className="
+              absolute
+              -inset-2
+              rounded-full
+              bg-gradient-to-r
+              from-sky-500/20
+              via-emerald-500/20
+              to-sky-400/20
+              blur-2xl
+              opacity-70
+              group-hover:opacity-100
+              transition
+              duration-500
+            "
+                />
+
+                {/* الصورة بحجم أكبر وبدون إطار قاسي */}
+                <div
+                  className="
+              relative
+              w-[280px]
+              sm:w-[360px]
+              lg:w-[420px]
+              xl:w-[460px]
+              overflow-hidden
+              rounded-3xl
+              shadow-2xl
+              shadow-sky-900/10
+              dark:shadow-black/40
+            "
+                >
+                  <Image
+                    src="/img/Ely-salem-2.png"
+                    alt="Ely Salem El Missawi - Web Developer"
+                    width={500}
+                    height={650}
+                    priority
+                    className="
+                h-auto
+                w-full
+                object-cover
+                scale-100
+                group-hover:scale-105
+                transition
+                duration-500
+                ease-out
+              "
+                  />
+                </div>
+
+                {/* شارة حالة تفاعلية محسّنة */}
+                <motion.div
+                  initial={{
+                    opacity: 0,
+                    y: 15,
+                  }}
+                  animate={
+                    heroInView
+                      ? {
+                          opacity: 1,
+                          y: 0,
+                        }
+                      : {}
+                  }
+                  transition={{
+                    delay: 0.7,
+                  }}
+                  className="
+              absolute
+              -bottom-4
+              -right-2
+              sm:-right-6
+              rounded-2xl
+              border
+              border-slate-200/80
+              dark:border-slate-700/80
+              bg-white/90
+              dark:bg-slate-900/90
+              backdrop-blur-md
+              px-4
+              py-2.5
+              shadow-lg
+            "
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span className="relative flex h-3 w-3">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                    </span>
+
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                      Open to opportunities
+                    </span>
+                  </div>
+                </motion.div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+
+        <Stats />
+      </section>
+      {/* =====================================================
+          ABOUT / VALUE
+      ===================================================== */}
+
+      <section
+        className="
+          max-w-7xl
+          mx-auto
+          px-4
+          sm:px-6
+          lg:px-8
+          py-20
+        "
+      >
+        <SectionHeading
+          eyebrow="نبذة عني"
+          title="مطور يهتم بالنتيجة، وليس بالكود فقط."
+          description="أجمع بين تطوير الويب، تجربة المستخدم وفهم احتياجات المشروع لبناء حلول رقمية عملية وقابلة للاستخدام."
+        />
+
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* For employers */}
+
           <motion.div
-            variants={{
-              hidden: { opacity: 0, scale: 0.9 },
-              visible: { opacity: 1, scale: 1 },
-            }}
-            whileHover={{ y: -10 }}
-            transition={{ type: "spring", stiffness: 300 }}
-            className="relative shrink-0 w-full max-w-[320px] md:max-w-[400px]"
+            whileHover={{ y: -4 }}
+            className="
+              rounded-3xl
+              border
+              border-slate-200
+              dark:border-slate-800
+              bg-white
+              dark:bg-slate-950
+              p-7
+              sm:p-8
+            "
           >
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl border-2 border-sky-400/30 group">
-              <Image
-                src="/img/Ely-salem-2.png"
-                alt="Ely Salem El Missawi"
-                width={400}
-                height={500}
-                priority
-                className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-700"
-              />
-              <div className="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-3xl pointer-events-none" />
-            </div>
+            <span className="text-3xl">💼</span>
+
+            <h3 className="mt-5 text-xl font-black text-slate-950 dark:text-white">
+              للفرق والشركات
+            </h3>
+
+            <p className="mt-3 leading-8 text-slate-600 dark:text-slate-400">
+              مهتم بالانضمام إلى فريق يعمل على منتجات ويب حقيقية، والمساهمة في
+              تطوير واجهات حديثة وتجارب رقمية موثوقة.
+            </p>
+
+            {/* ====== REPLACED CV LINK WITH CONTACT ====== */}
+            <a
+              href="#contact"
+              className="
+                mt-6
+                inline-flex
+                text-sm
+                font-bold
+                text-sky-600
+                dark:text-sky-400
+              "
+            >
+              تحدث معي عن التعاون ←
+            </a>
           </motion.div>
-        </motion.div>
+
+          {/* For clients */}
+
+          <motion.div
+            whileHover={{ y: -4 }}
+            className="
+              rounded-3xl
+              border
+              border-slate-200
+              dark:border-slate-800
+              bg-white
+              dark:bg-slate-950
+              p-7
+              sm:p-8
+            "
+          >
+            <span className="text-3xl">🚀</span>
+
+            <h3 className="mt-5 text-xl font-black text-slate-950 dark:text-white">
+              لأصحاب المشاريع
+            </h3>
+
+            <p className="mt-3 leading-8 text-slate-600 dark:text-slate-400">
+              أساعد الشركات والأفراد على بناء أو تطوير مواقع ومنصات ويب تركز على
+              الأداء، سهولة الاستخدام والتوافق مع مختلف الأجهزة.
+            </p>
+
+            <a
+              href="#contact"
+              className="
+                mt-6
+                inline-flex
+                text-sm
+                font-bold
+                text-sky-600
+                dark:text-sky-400
+              "
+            >
+              تحدث معي عن مشروعك ←
+            </a>
+          </motion.div>
+        </div>
       </section>
 
-      {/* ====== الإحصائيات ====== */}
-      <Stats />
+      {/* =====================================================
+          PROJECTS
+      ===================================================== */}
 
-      {/* ====== المهارات ====== */}
-      <section id="skills" className="space-y-8">
-        <div className="flex items-center gap-3 border-b border-sky-100 dark:border-slate-800 pb-4">
-          <span className="w-3 h-8 rounded-full bg-sky-400" />
-          <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white">
-            المهارات التقنية
-          </h2>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
-          {skillsData.map((skill) => (
-            <SkillCircle
-              key={skill.name}
-              name={skill.name}
-              category={skill.category}
-            />
-          ))}
-        </div>
-      </section>
+      <section
+        id="projects"
+        className="
+          scroll-mt-24
+          max-w-7xl
+          mx-auto
+          px-4
+          sm:px-6
+          lg:px-8
+          py-20
+        "
+      >
+        <SectionHeading
+          eyebrow="Portfolio"
+          title="مشاريع مختارة"
+          description="مجموعة من المشاريع التي تعكس مهاراتي في تطوير الويب، الواجهات وتجارب التجارة الإلكترونية."
+        />
 
-      {/* ====== المشاريع ====== */}
-      <section id="projects" className="space-y-8">
-        <div className="flex items-center gap-3 border-b border-sky-100 dark:border-slate-800 pb-4">
-          <span className="w-3 h-8 rounded-full bg-blue-500" />
-          <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white">
-            المشاريع المتميزة
-          </h2>
-        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projectsData.map((project, idx) => (
+          {projectsData.map((project, index) => (
             <motion.div
               key={project.id}
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.4, delay: idx * 0.1 }}
+              initial={{
+                opacity: 0,
+                y: 30,
+              }}
+              whileInView={{
+                opacity: 1,
+                y: 0,
+              }}
+              viewport={{
+                once: true,
+                margin: "-80px",
+              }}
+              transition={{
+                duration: 0.5,
+                delay: Math.min(index * 0.07, 0.3),
+              }}
             >
               <ProjectCard project={project} />
             </motion.div>
@@ -332,85 +919,482 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ====== آراء العملاء ====== */}
-      <Testimonials />
+      {/* =====================================================
+          SERVICES
+      ===================================================== */}
 
-      {/* ====== التواصل ====== */}
-      <section id="contact" className="space-y-8 py-10">
-        <div className="flex items-center gap-3 border-b border-sky-100 dark:border-slate-800 pb-4">
-          <span className="w-3 h-8 rounded-full bg-indigo-500" />
-          <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white">
-            تواصل معي
-          </h2>
-        </div>
+      <section
+        id="services"
+        className="
+          scroll-mt-24
+          bg-slate-50
+          dark:bg-slate-900/40
+          border-y
+          border-slate-200
+          dark:border-slate-800
+        "
+      >
+        <div
+          className="
+            max-w-7xl
+            mx-auto
+            px-4
+            sm:px-6
+            lg:px-8
+            py-20
+          "
+        >
+          <SectionHeading
+            eyebrow="Freelance"
+            title="كيف يمكنني مساعدتك؟"
+            description="خدمات تطوير ويب عملية وموجهة نحو احتياجات المشروع، دون تعقيد غير ضروري."
+          />
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            {
-              icon: "📧",
-              title: "البريد الإلكتروني",
-              value: "contact@elysalem.dev",
-              href: "mailto:contact@elysalem.dev",
-            },
-            {
-              icon: "📍",
-              title: "المكان",
-              value: "Vitoria-Gasteiz, España",
-              href: null,
-            },
-            {
-              icon: "💻",
-              title: "GitHub",
-              value: "github.com/elysalem",
-              href: "https://github.com",
-            },
-          ].map((item, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: idx * 0.1 }}
-              whileHover={{ y: -5 }}
-            >
-              {item.href ? (
-                <a
-                  href={item.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block p-6 rounded-2xl bg-white dark:bg-slate-900 border border-sky-100 dark:border-slate-800 shadow-sm hover:border-sky-400 transition text-center space-y-3 group"
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {[
+              {
+                icon: "⌘",
+                title: "تطوير مواقع الويب",
+                text: "مواقع حديثة ومتجاوبة تركز على الأداء وتجربة المستخدم.",
+              },
+              {
+                icon: "W",
+                title: "WordPress",
+                text: "تطوير وتخصيص مواقع WordPress بما يناسب احتياجات المشروع.",
+              },
+              {
+                icon: "🛒",
+                title: "WooCommerce",
+                text: "حلول ومواقع تجارة إلكترونية وتجارب شراء سهلة الاستخدام.",
+              },
+              {
+                icon: "⚡",
+                title: "تحسين المواقع",
+                text: "تحسين الواجهة، التوافق مع الأجهزة وتجربة الاستخدام.",
+              },
+            ].map((service, index) => (
+              <motion.div
+                key={service.title}
+                initial={{
+                  opacity: 0,
+                  y: 20,
+                }}
+                whileInView={{
+                  opacity: 1,
+                  y: 0,
+                }}
+                viewport={{
+                  once: true,
+                }}
+                transition={{
+                  delay: index * 0.08,
+                }}
+                whileHover={{
+                  y: -5,
+                }}
+                className="
+                  rounded-2xl
+                  border
+                  border-slate-200
+                  dark:border-slate-800
+                  bg-white
+                  dark:bg-slate-950
+                  p-6
+                "
+              >
+                <div
+                  className="
+                    flex
+                    h-12
+                    w-12
+                    items-center
+                    justify-center
+                    rounded-xl
+                    bg-sky-50
+                    dark:bg-sky-950/40
+                    text-lg
+                    font-black
+                    text-sky-500
+                  "
                 >
-                  <div className="w-12 h-12 mx-auto rounded-full bg-sky-100 dark:bg-sky-950/60 text-sky-500 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
-                    {item.icon}
-                  </div>
-                  <h4 className="font-bold text-slate-800 dark:text-white">
-                    {item.title}
-                  </h4>
-                  <p className="text-sm text-sky-500 font-medium" dir="ltr">
-                    {item.value}
-                  </p>
-                </a>
-              ) : (
-                <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-sky-100 dark:border-slate-800 shadow-sm text-center space-y-3">
-                  <div className="w-12 h-12 mx-auto rounded-full bg-blue-100 dark:bg-blue-950/60 text-blue-500 flex items-center justify-center text-2xl">
-                    {item.icon}
-                  </div>
-                  <h4 className="font-bold text-slate-800 dark:text-white">
-                    {item.title}
-                  </h4>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">
-                    {item.value}
-                  </p>
+                  {service.icon}
                 </div>
-              )}
-            </motion.div>
+
+                <h3 className="mt-5 font-black text-slate-950 dark:text-white">
+                  {service.title}
+                </h3>
+
+                <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-400">
+                  {service.text}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* =====================================================
+          SKILLS
+      ===================================================== */}
+
+      <section
+        id="skills"
+        className="
+          scroll-mt-24
+          max-w-7xl
+          mx-auto
+          px-4
+          sm:px-6
+          lg:px-8
+          py-20
+        "
+      >
+        <SectionHeading
+          eyebrow="Technical Skills"
+          title="التقنيات والأدوات"
+          description="مجموعة التقنيات التي أستخدمها في تطوير المواقع والتطبيقات وتجارب الويب."
+        />
+
+        <div className="space-y-10">
+          {Object.entries(groupedSkills).map(([category, skills]) => (
+            <div key={category}>
+              <h3 className="mb-4 text-lg font-black text-slate-900 dark:text-white">
+                {category}
+              </h3>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                {skills.map((skill) => (
+                  <SkillCard
+                    key={skill.name}
+                    name={skill.name}
+                    category={skill.category}
+                  />
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       </section>
 
-      {/* زر العودة للأعلى */}
-      <ScrollToTop />
+      {/* =====================================================
+          EXPERIENCE
+      ===================================================== */}
+
+      <section
+        id="experience"
+        className="
+          scroll-mt-24
+          bg-slate-50
+          dark:bg-slate-900/40
+          border-y
+          border-slate-200
+          dark:border-slate-800
+        "
+      >
+        <div
+          className="
+            max-w-7xl
+            mx-auto
+            px-4
+            sm:px-6
+            lg:px-8
+            py-20
+          "
+        >
+          <SectionHeading
+            eyebrow="Experience"
+            title="الخبرة المهنية"
+            description="مسار مهني يجمع بين تطوير الويب، التكوين والعمل على مشاريع ومبادرات مختلفة."
+          />
+
+          <div className="relative max-w-4xl">
+            {/* Timeline line */}
+
+            <div
+              aria-hidden="true"
+              className="
+                absolute
+                right-[11px]
+                top-2
+                bottom-2
+                w-px
+                bg-slate-200
+                dark:bg-slate-700
+              "
+            />
+
+            <div className="space-y-10">
+              {[
+                {
+                  year: "2025",
+                  title: "تطوير الويب — Vitoria-Gasteiz",
+                  text: "تجربة مهنية مرتبطة بتطوير الويب والعمل على بيئة احترافية.",
+                },
+
+                {
+                  year: "2015–2026",
+                  title: "التكوين والتدريب",
+                  text: 'خبرة في التكوين ضمن برنامج "Éxito en un Mundo Cambiante" إلى جانب أنشطة مهنية وتعليمية مختلفة.',
+                },
+              ].map((item) => (
+                <div
+                  key={item.title}
+                  className="
+                    relative
+                    pr-10
+                  "
+                >
+                  <span
+                    className="
+                      absolute
+                      right-0
+                      top-1
+                      h-6
+                      w-6
+                      rounded-full
+                      border-4
+                      border-slate-50
+                      dark:border-slate-900
+                      bg-sky-500
+                    "
+                  />
+
+                  <span className="text-sm font-black text-sky-500">
+                    {item.year}
+                  </span>
+
+                  <h3 className="mt-2 text-xl font-black text-slate-950 dark:text-white">
+                    {item.title}
+                  </h3>
+
+                  <p className="mt-2 max-w-2xl leading-8 text-slate-600 dark:text-slate-400">
+                    {item.text}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* =====================================================
+          EDUCATION
+      ===================================================== */}
+
+      <section
+        className="
+          max-w-7xl
+          mx-auto
+          px-4
+          sm:px-6
+          lg:px-8
+          py-20
+        "
+      >
+        <SectionHeading
+          eyebrow="Education"
+          title="التكوين والشهادات"
+          description="تكوين مستمر في تطوير الويب، التجارة الإلكترونية والأمن السيبراني."
+        />
+
+        <div className="grid md:grid-cols-2 gap-5">
+          {[
+            {
+              year: "2025",
+              title: "Confección y Publicación de Páginas Web",
+              place: "Centro de Estudios Álava — Vitoria-Gasteiz",
+            },
+            {
+              year: "2024",
+              title: "Curso de Ciberseguridad — 60h",
+              place: "Instituto Europa — Vitoria-Gasteiz",
+            },
+            {
+              year: "2023–2024",
+              title: "Bootcamp de diseño web orientado al comercio electrónico",
+              place: "Instituto Europa",
+            },
+            {
+              year: "2022",
+              title: "Curso Avanzado de Diseño Web con JavaScript, HTML y CSS",
+              place: "CETIC — Vitoria-Gasteiz",
+            },
+          ].map((item) => (
+            <div
+              key={`${item.year}-${item.title}`}
+              className="
+                rounded-2xl
+                border
+                border-slate-200
+                dark:border-slate-800
+                bg-white
+                dark:bg-slate-950
+                p-6
+              "
+            >
+              <span className="text-sm font-black text-sky-500">
+                {item.year}
+              </span>
+
+              <h3 className="mt-2 font-black text-slate-950 dark:text-white">
+                {item.title}
+              </h3>
+
+              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                {item.place}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* =====================================================
+          LANGUAGES
+      ===================================================== */}
+
+      <section
+        className="
+          max-w-7xl
+          mx-auto
+          px-4
+          sm:px-6
+          lg:px-8
+          pb-20
+        "
+      >
+        <SectionHeading eyebrow="Languages" title="اللغات" />
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            {
+              name: "العربية",
+              level: "Native",
+            },
+            {
+              name: "Español",
+              level: "Intermediate",
+            },
+            {
+              name: "Français",
+              level: "Intermediate / B1",
+            },
+            {
+              name: "English",
+              level: "Intermediate",
+            },
+          ].map((language) => (
+            <div
+              key={language.name}
+              className="
+                rounded-2xl
+                border
+                border-slate-200
+                dark:border-slate-800
+                bg-white
+                dark:bg-slate-950
+                p-5
+              "
+            >
+              <h3 className="font-black text-slate-950 dark:text-white">
+                {language.name}
+              </h3>
+
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                {language.level}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* =====================================================
+          TESTIMONIALS
+      ===================================================== */}
+
+      <section
+        className="
+          bg-slate-50
+          dark:bg-slate-900/40
+          border-y
+          border-slate-200
+          dark:border-slate-800
+          py-20
+        "
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <SectionHeading
+            eyebrow="Testimonials"
+            title="ماذا يقول العملاء؟"
+            description="تجارب وآراء من الأشخاص الذين عملت معهم."
+          />
+
+          <Testimonials />
+        </div>
+      </section>
+
+      {/* =====================================================
+          FINAL CTA
+      ===================================================== */}
+
+      <section
+        id="contact"
+        className="scroll-mt-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20"
+      >
+        <div className="overflow-hidden rounded-[2rem] bg-slate-950 dark:bg-white px-6 py-12 sm:p-14 text-center">
+          <span className="text-sm font-bold text-sky-400 dark:text-sky-600">
+            LET'S WORK TOGETHER
+          </span>
+
+          <h2 className="mt-4 text-3xl sm:text-4xl md:text-5xl font-black text-white dark:text-slate-950">
+            تبحث عن Web Developer؟
+            <br />
+            أو لديك مشروع؟
+          </h2>
+
+          <p className="mx-auto mt-5 max-w-2xl leading-8 text-slate-300 dark:text-slate-600">
+            سواء كنت تبحث عن مطور للانضمام إلى فريقك أو تحتاج إلى تطوير موقع أو
+            منصة، يسعدني أن أسمع منك.
+          </p>
+
+          <div className="mt-8 flex flex-col sm:flex-row justify-center gap-3">
+            <a
+              href="mailto:missawi02@gmail.com"
+              className="inline-flex items-center justify-center rounded-xl bg-white dark:bg-slate-950 px-7 py-3.5 font-black text-slate-950 dark:text-white transition hover:-translate-y-0.5 shadow-lg hover:shadow-xl"
+            >
+              تواصل عبر البريد
+            </a>
+          </div>
+
+          <div className="mt-8 flex flex-wrap justify-center gap-5 text-sm">
+            <a
+              href="https://github.com/elysalem"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-slate-400 hover:text-white dark:text-slate-500 dark:hover:text-slate-950 transition"
+            >
+              GitHub
+            </a>
+            <a
+              href="https://www.linkedin.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-slate-400 hover:text-white dark:text-slate-500 dark:hover:text-slate-950 transition"
+            >
+              LinkedIn
+            </a>
+            <span className="text-slate-600 dark:text-slate-400">
+              Vitoria-Gasteiz, España
+            </span>
+          </div>
+        </div>
+      </section>
+      {/* =====================================================
+          Footer
+      ===================================================== */}
+
       <Footer />
+
+      <ScrollToTop />
     </main>
   );
 }
