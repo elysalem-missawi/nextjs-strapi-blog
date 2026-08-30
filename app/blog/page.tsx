@@ -17,7 +17,7 @@ interface Post {
 
 async function getPosts(): Promise<Post[]> {
   try {
-    // جلب المقالات مع رابط صورة الغلاف والفرز حسب الأحدث
+    // جلب المقالات مع صورة الغلاف والفرز حسب الأحدث
     const res = await fetchStrapi('/posts?populate=cover&sort=publishedAt:desc');
     
     // التوافق مع هيكلية Strapi v5 و v4
@@ -64,10 +64,12 @@ export default async function BlogPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {posts.map((post) => {
             const imageUrl = post.cover?.url ? `${STRAPI_URL}${post.cover.url}` : null;
+            // استخدام slug أولاً، وإن لم يوجد نستخدم documentId أو id
+            const postIdentifier = post.slug || post.documentId || post.id;
 
             return (
               <article
-                key={post.id}
+                key={post.id || post.documentId}
                 className="bg-white dark:bg-slate-900 border border-sky-100 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all flex flex-col justify-between group"
               >
                 <div>
@@ -82,25 +84,29 @@ export default async function BlogPage() {
                     </div>
                   )}
                   <div className="p-6 space-y-3">
-                    <span className="text-xs font-semibold text-sky-500">
-                      {new Date(post.publishedAt).toLocaleDateString('ar-EG', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })}
-                    </span>
+                    {post.publishedAt && (
+                      <span className="text-xs font-semibold text-sky-500">
+                        {new Date(post.publishedAt).toLocaleDateString('ar-EG', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        })}
+                      </span>
+                    )}
                     <h2 className="text-xl font-bold text-slate-900 dark:text-white group-hover:text-sky-500 transition-colors">
                       {post.title}
                     </h2>
-                    <p className="text-slate-600 dark:text-slate-300 text-sm line-clamp-3 leading-relaxed">
-                      {post.excerpt}
-                    </p>
+                    {post.excerpt && (
+                      <p className="text-slate-600 dark:text-slate-300 text-sm line-clamp-3 leading-relaxed">
+                        {post.excerpt}
+                      </p>
+                    )}
                   </div>
                 </div>
 
                 <div className="p-6 pt-0">
                   <Link
-                    href={`/blog/${post.slug}`}
+                    href={`/blog/${postIdentifier}`}
                     className="inline-flex items-center gap-2 text-sky-600 dark:text-sky-400 font-semibold text-sm hover:underline"
                   >
                     اقرأ المقال كاملًا <span>←</span>
