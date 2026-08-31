@@ -12,9 +12,9 @@ export const projectsData: Project[] = [
   },
   {
     id: "2",
-    title: "Dr. Fatimetou - العيادة الطبية الإلكترونية",
+    title: "Dr. Fatimetou - مدونة شخصية ",
     description:
-      "موقع إلكتروني مخصص لاستشارات العيادة الطبية وحجز المواعيد والتعريف بالخدمات الصحية.",
+      "موقع إلكتروني معد ب Wordpress من أجل نشر المقالات الشخصية وكذلك ألعاب خاصة بمرحلة باكلوريا العلوم الطبيعية .",
     category: "web",
     technologies: ["WordPress", "PHP", "CSS3", "JavaScript"],
     liveUrl: "https://dr-fatimetou.page.gd/?i=1",
@@ -49,7 +49,7 @@ export const projectsData: Project[] = [
     id: "6",
     title: "Tabaroat - منصة تبرعات",
     description:
-      "منصة إلكترونية مخصصة لإدارة وتسهيل التبرعات ودعم المبادرات والأنشطة الخيرية.",
+      "منصة إلكترونية مخصصة لإدارة وتسهيل التبرعات  .تم االإنجاز مع فريق من المبرمجين الموريتانيين.",
     category: "web",
     technologies: ["WordPress", "WooCommerce", "PHP", "CSS3"],
     liveUrl: "https://tabaroat.com/",

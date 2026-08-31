@@ -694,7 +694,7 @@ export default function Home() {
             "
                 >
                   <Image
-                    src="/img/Ely-salem-2.png"
+                    src="/img/Ely-salem-4.png"
                     alt="Ely Salem El Missawi - Web Developer"
                     width={500}
                     height={650}
