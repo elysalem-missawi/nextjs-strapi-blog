@@ -81,7 +81,7 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="https://github.com/elysalem"
+                  href="https://github.com/elysalem-missawi"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-slate-600 dark:text-slate-400 hover:text-sky-500 transition-colors flex items-center gap-2"
